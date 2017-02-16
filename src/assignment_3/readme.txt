@@ -1,60 +1,24 @@
 Max Diekel
-Assignment 1 Readme
+Assignment 3 Readme
 
-Assignment 1
-Due 2/2/17
+Assignment 3
+Due 2/16/17
 
-I was unable to properly use the Buffet server after working with the TA's. I made an SSH key, but I am still locked out and unable to push to the remote repository. Because, of this I used github as my version control and my server. I apologize for this. 
+There are two things that I have included with this submission. First I included a python script [named turtlebot_goal_around_objects.py] in ./src/srcipts/. This script subscribes to the odometry topic and the scanner topic and uses this information to guide the turtlebot to the goal. This goal is at location (4,4) by default but it can be changed by editing the value in lines 34 and 35 which change the goal x and y coordinate respectively. I have also added a world file which has a jersey barrier setup. This world file was created in such a way that the default goal location demonstrates the code quite well. 
 
-After cloning my repository, build the catkin workspace by running the following command from the MaxDiekel_AuE893 directory:
+Launch this world file by typing:
+$ roslaunch turtlebot_gazebo turtlebot_world.launch world_file:= <world file's path>jersey_barrier_obstacle.world
 
-$ catkin_make
+Then run the python script by changing to the directory where the script is then typing:
+$ python turtlebot_goal_around_objects.py
 
-This should generate a build and devel directory in the main directory and build two nodes (the other nodes will not build because the CMakeLists.txt does not identify them to need executables). I did this on purpose because those cpp programs are not done.
+If the script is not an executable after downloading it from github, make it an executable by going to the directory where the script is and typing:
+$ chmod +x turtlebot_goal_around_objects.py
 
-Next, source the setup.bash file by typing this from the MaxDiekel_AuE893 directory:
+Then try running the script again. 
 
-$ source /devel/setup.bash
+What the script does:
+The script subscribes to the scan topic and the odom topic and uses this information. When there is no object detected in front of the turtlebot, the script publishes twist messages telling the turtlebot to go towards the goal. The speed and orientation of the robot are controlled with two independent PID controllers. The maximum speed and rotation of the robots were also capped in this move_goal mode. When the object detects an object in front of it, it exits the move_goal function and rotates until there is nothing in its field of view. Then it starts to move toward the goal again. While this algorithm is very simple, it does work quite well and adequately reaches the goal in most cases. However, it does not handle moving directly in the -x (world coordinates). This is due to the atan2() issue, and I did not incorporate a wrapping solution. 
 
-Next, open the turtlesim by running the following commands:
-
-$ roscore  //if you don't have one running already
-$ rosrun turtlesim turtlesim_node 
-
-This should open a turtlesim window to view the turtle in a 2D simulation. Now run the cleaning code by calling the assignment_1 package and the robot_cleaner_node node:
-
-$ rosrun assignment_1 robot_cleaner_node
-
-This node publishes a series of messages to a topic which the turtle is subscribed to. This series of messages tells the turtle to go to the bottom right corner of the window, and then cover the window up and down until it reaches the other side. At this point, the turtle returns to its home, the center of the window. You may now close the turtlesim node. 
-
-Next, open the gazebo world with a mobile base in the world. Do this by typing the following command:
-
-$ roslaunch turtlebot_gazebo turtlebot_world.launch world_file:=/opt/ros/kinetic/share/turtlebot_gazebo/worlds/empty.world
-
-This should open an empty world with a mobile base in the center of it. If this does not work, do the following:
-
-$ roslaunch turtlebot_gazebo turtlebot_world.launch  
-
-This should start gazebo with a world with several obstacles inside of it. Delete all of the objects EXCEPT FOR the mobile_base and ground_plane_0.
-
-With an empty world, view the bagged files by changing to the bagfiles/ directory and running the following commands:
-
-$ cd bagfiles/
-$ rosbag play go_turn180_comeback.bag
-
-This will publish a series of recorded messages to the topic which the turtlebot is subscribed to. The turtlebot will go forward, turn around and come back (as best as I could do with the my keystroke inputs to the turtlebot teleop node). At this point, reset the gazebo environment by running this service:
-
-$ rosservice call /gazebo/reset_world
-
-Now, play the other bag file. This bag file is a recording of a .cpp code which controls the turtlebot. This .cpp uses an open-loop control strategy by modeling the distance and rotation as a function of linear speed input, and angular speed inputs. As Gregory Dudek and Michael Jenkin, in their Computational Principles of Mobile Robotics, say in chapter 2, without some sensory input for localization, the error associated with this open loop control gets worse and worse over time. This is showcased in the simulator which imparts realist physics (inertia, friction, gravity, etc.). This is why the robot fails to follow the grid perfectly (and gets worse over time). To play this bag file use the following command:
-
-$ rosbag play grid_gazebo.bag
-
-Alternatively, you can run the node which published these recorded messages by running the following command.
-
-$ rosrun assignment_1 robot_cleaner_node_v2
-
-An interesting thing with the bag files is that they do not acheive the same outcome when they are played versus recorded. I do not know the reason for this, but this needs to be looked into more deeply. 
-
-Thank you,
+Thanks,
 Max
