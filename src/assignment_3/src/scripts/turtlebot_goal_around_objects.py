@@ -31,8 +31,8 @@ class turtlebot_goal_around_objects():
         self.turtlebot_odom_pose = Odometry()
         pose_message = Odometry()
         self.target = Odometry()
-        self.target.pose.pose.position.x = 4            # This is the target x position (change me)
-        self.target.pose.pose.position.y = 4            # This is the target y position (change me)
+        self.target.pose.pose.position.x = -4            # This is the target x position (change me)
+        self.target.pose.pose.position.y = -4            # This is the target y position (change me)
         self.target.pose.pose.position.z = 0 
         self.target.pose.pose.orientation.w = 1
         self.target.pose.pose.orientation.x = 0
