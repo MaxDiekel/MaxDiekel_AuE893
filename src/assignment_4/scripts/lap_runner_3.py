@@ -34,8 +34,8 @@ class lap_runner_3(object):
 		self.lateral_target = .8
 		self.time_current = rospy.get_time()
 		self.delta_t = 0.1
-		self.max_x = 0.1        
-		self.max_theta = 0.10	
+		self.max_x = 0.2        
+		self.max_theta = 0.15	
 		x_p_gain = .05
 		x_i_gain = 0
 		x_d_gain = 0
@@ -46,9 +46,9 @@ class lap_runner_3(object):
 		self.x_error = 0
 		self.x_prev_error = 0
 		self.x_pprev_error = 0
-		theta_p_gain = .15
+		theta_p_gain = .2
 		theta_i_gain = 0
-		theta_d_gain = 0.0
+		theta_d_gain = 0.01
 		theta_PID = self.discrete_pid_parameters(theta_p_gain, theta_i_gain, theta_d_gain)
 		self.a_theta = theta_PID[0]
 		self.b_theta = theta_PID[1]
@@ -107,7 +107,7 @@ class lap_runner_3(object):
 		prev_output = self.twist.angular.z
 		theta_pprev_error = self.theta_prev_error
 		self.theta_prev_error = self.theta_error
-		self.theta_error = heading_error + lateral_error
+		self.theta_error = 2*heading_error + lateral_error
 		output = prev_output + self.a_theta*self.theta_error + self.b_theta*self.theta_prev_error + self.c_theta*theta_pprev_error
 		if math.isnan(output):
 			output = prev_output
