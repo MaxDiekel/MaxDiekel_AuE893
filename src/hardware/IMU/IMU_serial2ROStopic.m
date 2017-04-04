@@ -8,7 +8,7 @@ delete(priorPorts);     % delete the previous connection
 clc;                    % clear command terminal
 clear;                  % clear workspace
 %% Serial Setup:
-s=serial('/dev/ttyACM0');           % create serial object
+s=serial('/dev/ttyACM0');           % create serial object (may need to alter port address)
 fopen(s);                           % open serial object
 s.ReadAsyncMode='continuous';       % set asynchronous reading to continuous
 s.BaudRate=115200;                  % set baud rate to 115200
@@ -20,7 +20,7 @@ msg=rosmessage('sensor_msgs/Imu');              % create Imu message instance
 time=0;                                 % initialize time [ms]
 eul=zeros(1,3);                         % prealocate euler array [degrees]
 ind=0;                                  % index for covariance sampling
-sample_size=50;                         % number of samples to store for covariance calc
+sample_size=10;                         % number of samples to store for covariance calc
 QUAT=ones(sample_size,3);               % quaternion covariance sample set
 ANG_VEL=ones(sample_size,3);            % angular velocity covariance sample set
 ACCEL=ones(sample_size,3);              % linear acceleration covariance sample set
@@ -45,11 +45,10 @@ while 1                     % continuous loop
         QUAT(ind,1)=msg.Orientation.X;
         QUAT(ind,2)=msg.Orientation.Y;
         QUAT(ind,3)=msg.Orientation.Z;
-        var_quat=std(QUAT).^2;              % Orientation Covariance calculation
+        std_quat=std(QUAT);             % calculate quaternion standard variation
+        var_quat=std_quat'*std_quat;    % Orientation Covariance calculation
         % set Orientation Covariance values
-        msg.OrientationCovariance(1)=var_quat(1);
-        msg.OrientationCovariance(5)=var_quat(2);
-        msg.OrientationCovariance(9)=var_quat(3);
+        msg.OrientationCovariance=var_quat(:);
         % set Angular Velocity values
         msg.AngularVelocity.X=(data(9)-eul(1))*pi./(180*dt);
         msg.AngularVelocity.Y=(data(10)-eul(2))*pi./(180*dt);
@@ -58,11 +57,10 @@ while 1                     % continuous loop
         ANG_VEL(ind,1)=msg.AngularVelocity.X;
         ANG_VEL(ind,2)=msg.AngularVelocity.Y;
         ANG_VEL(ind,3)=msg.AngularVelocity.Z;
-        var_ang_vel=std(ANG_VEL).^2;        % Angular Velocity Covariance calculation
+        std_ang_vel=std(ANG_VEL);       % calculate Angular Velocity standard deviation
+        var_ang_vel=std_ang_vel'*std_ang_vel;   % Angular Velocity Covariance calculation
         % set Angular Velocity Covariance values
-        msg.AngularVelocityCovariance(1)=var_ang_vel(1);
-        msg.AngularVelocityCovariance(5)=var_ang_vel(2);
-        msg.AngularVelocityCovariance(9)=var_ang_vel(3);
+        msg.AngularVelocityCovariance=var_ang_vel(:);  
         eul=data(9:11);                 % update euler angle variable
         % set Linear Acceleration values
         msg.LinearAcceleration.X=data(2);
@@ -72,11 +70,10 @@ while 1                     % continuous loop
         ACCEL(ind,1)=msg.LinearAcceleration.X;
         ACCEL(ind,2)=msg.LinearAcceleration.Y;
         ACCEL(ind,3)=msg.LinearAcceleration.Z;
-        var_accel=std(ACCEL).^2;            % Linear Acceleration Covariance calculation
+        std_accel=std(ACCEL);           % calculate Linear Acceleration standard deviation
+        var_accel=std_accel'*std_accel;     % Linear Acceleration Covariance calculation
         % set Linear Acceleration Covariance values
-        msg.LinearAccelerationCovariance(1)=var_accel(1);
-        msg.LinearAccelerationCovariance(5)=var_accel(2);
-        msg.LinearAccelerationCovariance(9)=var_accel(3);
+        msg.LinearAccelerationCovariance=var_accel(:);
         send(imu_pub,msg);          % publish message to topic
         % reset index back to zero cycle
         if ind==sample_size         
